@@ -1,0 +1,30 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:15
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: odc_auth
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  api:
+    build: .
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/odc_auth
+      - JWT_ACCESS_SECRET=your_access_secret
+      - JWT_REFRESH_SECRET=your_refresh_secret
+      - EMAIL_HOST=smtp.example.com
+      - EMAIL_USER=example@example.com
+      - EMAIL_PASS=examplepassword
+      - PORT=4000
+    ports:
+      - "4000:4000"
+    command: sh -c 'npx prisma migrate deploy && node dist/server.js'
+volumes:
+  postgres_data:
