@@ -104,6 +104,87 @@ model User {
 - Run with Docker Compose: `docker-compose up --build` spins up the Node server and PostgreSQL database.
 - Prisma migrations auto-run on container startup.
 
+### Email Templates (Customizable for All Emails)
+
+Supports predefined and fully custom email messages. Variables are interpolated using {{variable}}.
+
+| Category            | Method                                    |
+| ------------------- | ----------------------------------------- |
+| welcomeTempPassword | nameOrEmail, tempPassword                 |
+| passwordReset       | nameOrEmail, resetToken, actionUrl        |
+| verifyEmail         | nameOrEmail, verificationToken, actionUrl |
+|                     |                                           |
+
+- You can create accounts without providing a password. The service will auto-generate a strong temporary password, email it to the user, and the user can change it later.
+- All outgoing emails can be customized per request by providing optional fields:
+  - `emailSubject`: custom subject line
+  - `emailTemplateKey`: one of predefined templates
+  - `emailTemplateText`: fully custom plaintext; supports `{{variable}}` interpolation
+  - Link support (password reset / verify):
+    - `emailLinkBase`: base URL to send users to (e.g., `https://app/reset-password`)
+    - `emailLinkQueryName`: query name for the token (default: `token`)
+    - `emailLinkTemplateText`: full URL template containing `{{token}}` (overrides base)
+- Predefined templates (keys):
+  - `welcomeTempPassword` variables: `{{nameOrEmail}}`, `{{tempPassword}}`
+  - `passwordReset` variables: `{{nameOrEmail}}`, `{{resetToken}}`
+  - `verifyEmail` variables: `{{nameOrEmail}}`, `{{verificationToken}}`
+
+Example: Register with auto-generated temp password and custom subject/template key
+
+```json
+{
+  "email": "tempuser@example.com",
+  "name": "Temp User",
+  "emailSubject": "Your ODC temp password",
+  "emailTemplateKey": "welcomeTempPassword"
+}
+```
+
+Email template examples
+
+- Custom welcome (temp password) template text:
+
+```text
+Hello {{nameOrEmail}},
+
+Welcome aboard! Your temporary password is: {{tempPassword}}
+
+Please sign in and change it immediately from your account settings.
+
+Thanks,
+ODC Auth Team
+```
+
+- Custom password reset template text:
+
+```text
+Hi {{nameOrEmail}},
+
+Use this token to reset your password: {{resetToken}}
+Reset here: {{actionUrl}}
+If you didn't request this, please ignore this email.
+```
+
+- Custom email verification template text:
+
+```text
+Hello {{nameOrEmail}},
+
+Verify your email using this token: {{verificationToken}}
+Verify here: {{actionUrl}}
+```
+
+- Example request using a custom template (register with auto temp password):
+
+```json
+{
+  "email": "tempuser@example.com",
+  "name": "Temp User",
+  "emailSubject": "Welcome to ODC!",
+  "emailTemplateText": "Hello {{nameOrEmail}}, your temporary password is {{tempPassword}}."
+}
+```
+
 ---
 
 ## Environment Variables

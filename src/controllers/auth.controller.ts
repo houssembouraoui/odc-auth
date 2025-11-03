@@ -100,7 +100,12 @@ export const forgotPassword = async (
   next: NextFunction
 ) => {
   try {
-    const result = await forgotPasswordService({ email: req.body?.email });
+    const result = await forgotPasswordService({
+      email: req.body?.email,
+      emailSubject: req.body?.emailSubject,
+      emailTemplateKey: req.body?.emailTemplateKey,
+      emailTemplateText: req.body?.emailTemplateText,
+    });
     res.json(result);
   } catch (err) {
     next(err);
@@ -160,7 +165,12 @@ export const resendVerification = async (
   next: NextFunction
 ) => {
   try {
-    const result = await resendVerificationService({ email: req.body?.email });
+    const result = await resendVerificationService({
+      email: req.body?.email,
+      emailSubject: req.body?.emailSubject,
+      emailTemplateKey: req.body?.emailTemplateKey,
+      emailTemplateText: req.body?.emailTemplateText,
+    });
     res.json(result);
   } catch (err) {
     next(err);

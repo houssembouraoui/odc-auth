@@ -27,6 +27,26 @@
       }
     },
     {
+      "name": "Register (auto temp password)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"tempuser@example.com\",\n  \"name\": \"Temp User\",\n  \"emailSubject\": \"Your ODC temp password\",\n  \"emailTemplateKey\": \"welcomeTempPassword\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:4000/api/auth/register",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "4000",
+          "path": ["api", "auth", "register"]
+        }
+      }
+    },
+    {
       "name": "Login",
       "request": {
         "method": "POST",
@@ -116,7 +136,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"user@example.com\"\n}"
+          "raw": "{\n  \"email\": \"user@example.com\",\n  \"emailSubject\": \"Reset your password\",\n  \"emailTemplateKey\": \"passwordReset\",\n  \"emailLinkBase\": \"https://app.example.com/reset-password\",\n  \"emailLinkQueryName\": \"token\"\n}"
         },
         "url": {
           "raw": "http://localhost:4000/api/auth/password/forgot",
@@ -197,7 +217,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"user@example.com\"\n}"
+          "raw": "{\n  \"email\": \"user@example.com\",\n  \"emailSubject\": \"Verify your email\",\n  \"emailTemplateKey\": \"verifyEmail\",\n  \"emailLinkTemplateText\": \"https://app.example.com/verify?code={{token}}\"\n}"
         },
         "url": {
           "raw": "http://localhost:4000/api/auth/resend-verification",
