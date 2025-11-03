@@ -1,13 +1,38 @@
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions, Secret, JwtPayload } from "jsonwebtoken";
 import { ENV } from "../config/env";
 
-export function generateAccessToken(payload: any, expiresIn = "15m") {
-  return jwt.sign(payload, ENV.JWT_ACCESS_SECRET, { expiresIn });
+function requireSecret(value: string | undefined, name: string): Secret {
+  if (!value) {
+    throw new Error(`${name} is not set`);
+  }
+  return value as Secret;
 }
-export function generateRefreshToken(payload: any, expiresIn = "7d") {
-  return jwt.sign(payload, ENV.JWT_REFRESH_SECRET, { expiresIn });
+
+export function generateAccessToken(
+  payload: string | object | Buffer,
+  expiresIn: SignOptions["expiresIn"] = "15m"
+): string {
+  const secret = requireSecret(ENV.JWT_ACCESS_SECRET, "JWT_ACCESS_SECRET");
+  const options: SignOptions = { expiresIn };
+  return jwt.sign(payload, secret, options);
 }
-export function verifyToken(token: string, isRefresh = false) {
-  const secret = isRefresh ? ENV.JWT_REFRESH_SECRET : ENV.JWT_ACCESS_SECRET;
+
+export function generateRefreshToken(
+  payload: string | object | Buffer,
+  expiresIn: SignOptions["expiresIn"] = "7d"
+): string {
+  const secret = requireSecret(ENV.JWT_REFRESH_SECRET, "JWT_REFRESH_SECRET");
+  const options: SignOptions = { expiresIn };
+  return jwt.sign(payload, secret, options);
+}
+
+export function verifyToken(
+  token: string,
+  isRefresh = false
+): string | JwtPayload {
+  const secret = requireSecret(
+    isRefresh ? ENV.JWT_REFRESH_SECRET : ENV.JWT_ACCESS_SECRET,
+    isRefresh ? "JWT_REFRESH_SECRET" : "JWT_ACCESS_SECRET"
+  );
   return jwt.verify(token, secret);
 }

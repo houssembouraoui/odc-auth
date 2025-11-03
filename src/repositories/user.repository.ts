@@ -1,4 +1,5 @@
 import { prisma } from "../config/database";
+import { Prisma } from "@prisma/client";
 import { User } from "../models/user.model";
 
 export const getUserByEmail = async (email: string): Promise<User | null> => {
@@ -9,13 +10,15 @@ export const getUserById = async (id: string): Promise<User | null> => {
   return prisma.user.findUnique({ where: { id } });
 };
 
-export const createUser = async (data: Partial<User>): Promise<User> => {
+export const createUser = async (
+  data: Prisma.UserCreateInput
+): Promise<User> => {
   return prisma.user.create({ data });
 };
 
 export const updateUser = async (
   id: string,
-  data: Partial<User>
+  data: Prisma.UserUpdateInput
 ): Promise<User> => {
   return prisma.user.update({ where: { id }, data });
 };
