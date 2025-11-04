@@ -207,7 +207,7 @@ PORT=4000
 
 1. **Clone the repo:**
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/houssembouraoui/odc-auth.git
    cd odc-auth
    ```
 2. **Ensure Docker & Docker Compose are installed.**
