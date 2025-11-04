@@ -29,8 +29,12 @@ export async function registerService(input: {
   if (existing) {
     throw { status: 409, message: "Email already in use" };
   }
-  const isTemp = !input.password;
-  const tempPassword = isTemp ? generateTempPassword() : input.password!;
+  const providedPassword =
+    typeof input.password === "string" && input.password.trim().length > 0
+      ? input.password.trim()
+      : undefined;
+  const isTemp = !providedPassword;
+  const tempPassword = isTemp ? generateTempPassword() : providedPassword!;
   const passwordHashed = await hashPassword(tempPassword);
   const data: Prisma.UserCreateInput = {
     email: input.email,
