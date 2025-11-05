@@ -113,7 +113,6 @@ Supports predefined and fully custom email messages. Variables are interpolated 
 | welcomeTempPassword | nameOrEmail, tempPassword                 |
 | passwordReset       | nameOrEmail, resetToken, actionUrl        |
 | verifyEmail         | nameOrEmail, verificationToken, actionUrl |
-|                     |                                           |
 
 - You can create accounts without providing a password. The service will auto-generate a strong temporary password, email it to the user, and the user can change it later.
 - All outgoing emails can be customized per request by providing optional fields:

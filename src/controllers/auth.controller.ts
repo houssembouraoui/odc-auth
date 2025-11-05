@@ -105,6 +105,9 @@ export const forgotPassword = async (
       emailSubject: req.body?.emailSubject,
       emailTemplateKey: req.body?.emailTemplateKey,
       emailTemplateText: req.body?.emailTemplateText,
+      emailLinkBase: req.body?.emailLinkBase,
+      emailLinkQueryName: req.body?.emailLinkQueryName,
+      emailLinkTemplateText: req.body?.emailLinkTemplateText,
     });
     res.json(result);
   } catch (err) {

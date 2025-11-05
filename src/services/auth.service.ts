@@ -131,6 +131,7 @@ export async function forgotPasswordService(input: {
     queryName: input.emailLinkQueryName,
     templateText: input.emailLinkTemplateText,
   });
+
   await sendTemplatedMail({
     to: user.email,
     subject: input.emailSubject || "Password Reset",
@@ -236,6 +237,7 @@ function buildActionUrl(params: {
   templateText?: string;
 }): string | undefined {
   const { token, base, queryName = "token", templateText } = params;
+
   if (templateText) {
     return templateText.replace(
       /\{\{\s*token\s*\}\}/g,
