@@ -138,6 +138,7 @@ export const changePassword = async (
 ) => {
   try {
     const userId = (req as any).user?.sub as string;
+
     const result = await changePasswordService({
       userId,
       currentPassword: req.body?.currentPassword,
@@ -173,6 +174,7 @@ export const resendVerification = async (
       emailSubject: req.body?.emailSubject,
       emailTemplateKey: req.body?.emailTemplateKey,
       emailTemplateText: req.body?.emailTemplateText,
+      emailLinkTemplateText: req.body?.emailLinkTemplateText,
     });
     res.json(result);
   } catch (err) {

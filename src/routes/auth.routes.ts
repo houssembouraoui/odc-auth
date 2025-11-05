@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as authController from "../controllers/auth.controller";
 import { validate } from "../middleware/validate.middleware";
+import { authMiddleware } from "../middleware/auth.middleware";
 import {
   registerSchema,
   loginSchema,
@@ -31,7 +32,7 @@ authRouter.post(
   validate({ body: logoutSchema }),
   authController.logout
 );
-authRouter.get("/me", authController.me);
+authRouter.get("/me", authMiddleware, authController.me);
 
 authRouter.post(
   "/refresh",
@@ -57,6 +58,7 @@ authRouter.post(
 authRouter.post(
   "/password/change",
   validate({ body: changePasswordSchema }),
+  authMiddleware,
   authController.changePassword
 );
 
