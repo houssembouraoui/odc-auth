@@ -20,7 +20,12 @@ async function registerService(input) {
     if (existing) {
         throw { status: 409, message: "Email already in use" };
     }
-    const passwordHashed = await (0, hash_util_1.hashPassword)(input.password);
+    const providedPassword = typeof input.password === "string" && input.password.trim().length > 0
+        ? input.password.trim()
+        : undefined;
+    const isTemp = !providedPassword;
+    const tempPassword = isTemp ? (0, hash_util_1.generateTempPassword)() : providedPassword;
+    const passwordHashed = await (0, hash_util_1.hashPassword)(tempPassword);
     const data = {
         email: input.email,
         password: passwordHashed,
@@ -29,7 +34,22 @@ async function registerService(input) {
     };
     const user = await (0, user_repository_1.createUser)(data);
     const accessToken = (0, token_util_1.generateAccessToken)({ sub: user.id, email: user.email });
-    const refreshToken = (0, token_util_1.generateRefreshToken)({ sub: user.id, email: user.email });
+    const refreshToken = (0, token_util_1.generateRefreshToken)({
+        sub: user.id,
+        email: user.email,
+    });
+    if (isTemp) {
+        await (0, email_util_1.sendTemplatedMail)({
+            to: user.email,
+            subject: input.emailSubject,
+            templateKey: input.emailTemplateKey,
+            templateText: input.emailTemplateText,
+            variables: {
+                nameOrEmail: user.name || user.email,
+                tempPassword,
+            },
+        });
+    }
     return { user: sanitizeUser(user), accessToken, refreshToken };
 }
 async function loginService(input) {
@@ -42,7 +62,10 @@ async function loginService(input) {
         throw { status: 401, message: "Invalid credentials" };
     }
     const accessToken = (0, token_util_1.generateAccessToken)({ sub: user.id, email: user.email });
-    const refreshToken = (0, token_util_1.generateRefreshToken)({ sub: user.id, email: user.email });
+    const refreshToken = (0, token_util_1.generateRefreshToken)({
+        sub: user.id,
+        email: user.email,
+    });
     return { user: sanitizeUser(user), accessToken, refreshToken };
 }
 async function logoutService(input) {
@@ -62,7 +85,10 @@ async function refreshTokenService(input) {
         const user = await (0, user_repository_1.getUserById)(userId);
         if (!user)
             throw new Error("User not found");
-        const accessToken = (0, token_util_1.generateAccessToken)({ sub: user.id, email: user.email });
+        const accessToken = (0, token_util_1.generateAccessToken)({
+            sub: user.id,
+            email: user.email,
+        });
         return { accessToken };
     }
     catch {
@@ -79,7 +105,23 @@ async function forgotPasswordService(input) {
         return { success: true };
     const resetToken = (0, token_util_1.generateRefreshToken)({ sub: user.id }, "30m");
     await (0, user_repository_1.updateUser)(user.id, { resetToken });
-    await (0, email_util_1.sendMail)(user.email, "Password Reset", `Use this token to reset your password: ${resetToken}`);
+    const actionUrl = buildActionUrl({
+        token: resetToken,
+        base: input.emailLinkBase,
+        queryName: input.emailLinkQueryName,
+        templateText: input.emailLinkTemplateText,
+    });
+    await (0, email_util_1.sendTemplatedMail)({
+        to: user.email,
+        subject: input.emailSubject || "Password Reset",
+        templateKey: input.emailTemplateKey || "passwordReset",
+        templateText: input.emailTemplateText,
+        variables: {
+            nameOrEmail: user.name || user.email,
+            resetToken,
+            actionUrl: actionUrl || "",
+        },
+    });
     return { success: true };
 }
 async function resetPasswordService(input) {
@@ -128,10 +170,38 @@ async function resendVerificationService(input) {
         return { success: true };
     const token = (0, token_util_1.generateAccessToken)({ sub: user.id }, "30m");
     await (0, user_repository_1.updateUser)(user.id, { verificationToken: token });
-    await (0, email_util_1.sendMail)(user.email, "Verify your email", `Use this token to verify your email: ${token}`);
+    const actionUrl = buildActionUrl({
+        token,
+        base: input.emailLinkBase,
+        queryName: input.emailLinkQueryName,
+        templateText: input.emailLinkTemplateText,
+    });
+    await (0, email_util_1.sendTemplatedMail)({
+        to: user.email,
+        subject: input.emailSubject || "Verify your email",
+        templateKey: input.emailTemplateKey || "verifyEmail",
+        templateText: input.emailTemplateText,
+        variables: {
+            nameOrEmail: user.name || user.email,
+            verificationToken: token,
+            actionUrl: actionUrl || "",
+        },
+    });
     return { success: true };
 }
 function sanitizeUser(user) {
     const { password, ...rest } = user;
     return rest;
+}
+function buildActionUrl(params) {
+    const { token, base, queryName = "token", templateText } = params;
+    if (templateText) {
+        return templateText.replace(/\{\{\s*token\s*\}\}/g, encodeURIComponent(token));
+    }
+    if (base) {
+        const hasQuery = base.includes("?");
+        const sep = hasQuery ? "&" : "?";
+        return `${base}${sep}${encodeURIComponent(queryName)}=${encodeURIComponent(token)}`;
+    }
+    return undefined;
 }

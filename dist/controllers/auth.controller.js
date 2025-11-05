@@ -71,7 +71,15 @@ const revokeToken = async (req, res, next) => {
 exports.revokeToken = revokeToken;
 const forgotPassword = async (req, res, next) => {
     try {
-        const result = await (0, auth_service_1.forgotPasswordService)({ email: req.body?.email });
+        const result = await (0, auth_service_1.forgotPasswordService)({
+            email: req.body?.email,
+            emailSubject: req.body?.emailSubject,
+            emailTemplateKey: req.body?.emailTemplateKey,
+            emailTemplateText: req.body?.emailTemplateText,
+            emailLinkBase: req.body?.emailLinkBase,
+            emailLinkQueryName: req.body?.emailLinkQueryName,
+            emailLinkTemplateText: req.body?.emailLinkTemplateText,
+        });
         res.json(result);
     }
     catch (err) {
@@ -119,7 +127,12 @@ const verifyEmail = async (req, res, next) => {
 exports.verifyEmail = verifyEmail;
 const resendVerification = async (req, res, next) => {
     try {
-        const result = await (0, auth_service_1.resendVerificationService)({ email: req.body?.email });
+        const result = await (0, auth_service_1.resendVerificationService)({
+            email: req.body?.email,
+            emailSubject: req.body?.emailSubject,
+            emailTemplateKey: req.body?.emailTemplateKey,
+            emailTemplateText: req.body?.emailTemplateText,
+        });
         res.json(result);
     }
     catch (err) {

@@ -14,7 +14,7 @@ import {
   generateRefreshToken,
   verifyToken,
 } from "../utils/token.util";
-import { sendMail, sendTemplatedMail } from "../utils/email.util";
+import { sendTemplatedMail } from "../utils/email.util";
 import { Prisma } from "@prisma/client";
 
 export async function registerService(input: {
