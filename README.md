@@ -25,33 +25,36 @@ A reusable, standalone authentication service that can run locally and be integr
 Layered, maintainable project structure:
 
 ```
-/src
-    /app
-        server.ts
-        routes.ts
-    /config
-        env.ts
-        database.ts
-    /models
-        user.model.ts        // Prisma schema maps here
-    /routes
-        auth.routes.ts
-    /controllers
-        auth.controller.ts
-    /services
-        auth.service.ts
-    /repositories
-        user.repository.ts
-    /middleware
-        auth.middleware.ts
-        error.middleware.ts
-    /utils
-        token.util.ts
-        email.util.ts
-        hash.util.ts
-prisma/schema.prisma
-docker-compose.yml
-Dockerfile
+your-backend-project/
+├── src/
+│   ├── app/
+│   │   ├── server.ts
+│   │   └── routes.ts
+│   ├── config/
+│   │   ├── env.ts
+│   │   └── database.ts
+│   ├── models/
+│   │   └── user.model.ts
+│   ├── routes/
+│   │   └── auth.routes.ts
+│   ├── controllers/
+│   │   └── auth.controller.ts
+│   ├── services/
+│   │   └── auth.service.ts
+│   ├── repositories/
+│   │   └── user.repository.ts
+│   ├── middleware/
+│   │   ├── auth.middleware.ts
+│   │   └── error.middleware.ts
+│   └── utils/
+│       ├── token.util.ts
+│       ├── email.util.ts
+│       └── hash.util.ts
+├── prisma/
+│   └── schema.prisma
+├── docker-compose.yml
+└── Dockerfile
+
 ```
 
 ---
