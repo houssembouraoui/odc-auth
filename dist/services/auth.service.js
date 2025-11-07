@@ -11,6 +11,8 @@ exports.resetPasswordService = resetPasswordService;
 exports.changePasswordService = changePasswordService;
 exports.verifyEmailService = verifyEmailService;
 exports.resendVerificationService = resendVerificationService;
+exports.deactivateUserService = deactivateUserService;
+exports.activateUserService = activateUserService;
 const user_repository_1 = require("../repositories/user.repository");
 const hash_util_1 = require("../utils/hash.util");
 const token_util_1 = require("../utils/token.util");
@@ -31,6 +33,7 @@ async function registerService(input) {
         password: passwordHashed,
         name: input.name,
         isVerified: false,
+        isActive: true,
     };
     const user = await (0, user_repository_1.createUser)(data);
     const accessToken = (0, token_util_1.generateAccessToken)({ sub: user.id, email: user.email });
@@ -57,6 +60,9 @@ async function loginService(input) {
     if (!user) {
         throw { status: 401, message: "Invalid credentials" };
     }
+    if (!user.isActive) {
+        throw { status: 403, message: "User is deactivated" };
+    }
     const ok = await (0, hash_util_1.comparePasswords)(input.password, user.password);
     if (!ok) {
         throw { status: 401, message: "Invalid credentials" };
@@ -76,6 +82,8 @@ async function getMeService(userId) {
     const user = await (0, user_repository_1.getUserById)(userId);
     if (!user)
         throw { status: 404, message: "User not found" };
+    if (!user.isActive)
+        throw { status: 403, message: "User is deactivated" };
     return sanitizeUser(user);
 }
 async function refreshTokenService(input) {
@@ -85,6 +93,8 @@ async function refreshTokenService(input) {
         const user = await (0, user_repository_1.getUserById)(userId);
         if (!user)
             throw new Error("User not found");
+        if (!user.isActive)
+            throw new Error("User is deactivated");
         const accessToken = (0, token_util_1.generateAccessToken)({
             sub: user.id,
             email: user.email,
@@ -143,6 +153,8 @@ async function changePasswordService(input) {
     const user = await (0, user_repository_1.getUserById)(input.userId);
     if (!user)
         throw { status: 404, message: "User not found" };
+    if (!user.isActive)
+        throw { status: 403, message: "User is deactivated" };
     const ok = await (0, hash_util_1.comparePasswords)(input.currentPassword, user.password);
     if (!ok)
         throw { status: 401, message: "Invalid current password" };
@@ -157,6 +169,8 @@ async function verifyEmailService(input) {
         const user = await (0, user_repository_1.getUserById)(userId);
         if (!user || user.verificationToken !== input.token)
             throw new Error("Invalid token");
+        if (!user.isActive)
+            throw new Error("User is deactivated");
         await (0, user_repository_1.updateUser)(user.id, { isVerified: true, verificationToken: null });
         return { success: true };
     }
@@ -168,6 +182,8 @@ async function resendVerificationService(input) {
     const user = await (0, user_repository_1.getUserByEmail)(input.email);
     if (!user)
         return { success: true };
+    if (!user.isActive)
+        throw { status: 403, message: "User is deactivated" };
     const token = (0, token_util_1.generateAccessToken)({ sub: user.id }, "30m");
     await (0, user_repository_1.updateUser)(user.id, { verificationToken: token });
     const actionUrl = buildActionUrl({
@@ -188,6 +204,22 @@ async function resendVerificationService(input) {
         },
     });
     return { success: true };
+}
+async function deactivateUserService(input) {
+    return setUserActivationService({ userId: input.userId, isActive: false });
+}
+async function activateUserService(input) {
+    return setUserActivationService({ userId: input.userId, isActive: true });
+}
+async function setUserActivationService(input) {
+    const user = await (0, user_repository_1.getUserById)(input.userId);
+    if (!user)
+        throw { status: 404, message: "User not found" };
+    if (user.isActive === input.isActive) {
+        return { user: sanitizeUser(user) };
+    }
+    const updated = await (0, user_repository_1.updateUser)(user.id, { isActive: input.isActive });
+    return { user: sanitizeUser(updated) };
 }
 function sanitizeUser(user) {
     const { password, ...rest } = user;

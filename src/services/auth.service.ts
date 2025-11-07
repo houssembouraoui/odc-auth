@@ -41,6 +41,7 @@ export async function registerService(input: {
     password: passwordHashed,
     name: input.name,
     isVerified: false,
+    isActive: true,
   };
   const user = await createUser(data);
   const accessToken = generateAccessToken({ sub: user.id, email: user.email });
@@ -68,6 +69,9 @@ export async function loginService(input: { email: string; password: string }) {
   if (!user) {
     throw { status: 401, message: "Invalid credentials" };
   }
+  if (!user.isActive) {
+    throw { status: 403, message: "User is deactivated" };
+  }
   const ok = await comparePasswords(input.password, user.password);
   if (!ok) {
     throw { status: 401, message: "Invalid credentials" };
@@ -88,6 +92,7 @@ export async function logoutService(input: { refreshToken?: string }) {
 export async function getMeService(userId: string) {
   const user = await getUserById(userId);
   if (!user) throw { status: 404, message: "User not found" };
+  if (!user.isActive) throw { status: 403, message: "User is deactivated" };
   return sanitizeUser(user);
 }
 
@@ -97,6 +102,7 @@ export async function refreshTokenService(input: { refreshToken: string }) {
     const userId = decoded.sub as string;
     const user = await getUserById(userId);
     if (!user) throw new Error("User not found");
+    if (!user.isActive) throw new Error("User is deactivated");
     const accessToken = generateAccessToken({
       sub: user.id,
       email: user.email,
@@ -171,6 +177,7 @@ export async function changePasswordService(input: {
 }) {
   const user = await getUserById(input.userId);
   if (!user) throw { status: 404, message: "User not found" };
+  if (!user.isActive) throw { status: 403, message: "User is deactivated" };
   const ok = await comparePasswords(input.currentPassword, user.password);
   if (!ok) throw { status: 401, message: "Invalid current password" };
   const passwordHashed = await hashPassword(input.newPassword);
@@ -185,6 +192,7 @@ export async function verifyEmailService(input: { token: string }) {
     const user = await getUserById(userId);
     if (!user || user.verificationToken !== input.token)
       throw new Error("Invalid token");
+    if (!user.isActive) throw new Error("User is deactivated");
     await updateUser(user.id, { isVerified: true, verificationToken: null });
     return { success: true };
   } catch {
@@ -203,6 +211,7 @@ export async function resendVerificationService(input: {
 }) {
   const user = await getUserByEmail(input.email);
   if (!user) return { success: true };
+  if (!user.isActive) throw { status: 403, message: "User is deactivated" };
   const token = generateAccessToken({ sub: user.id }, "30m");
   await updateUser(user.id, { verificationToken: token });
   const actionUrl = buildActionUrl({
@@ -223,6 +232,29 @@ export async function resendVerificationService(input: {
     },
   });
   return { success: true };
+}
+
+export async function deactivateUserService(input: { userId: string }) {
+  return setUserActivationService({ userId: input.userId, isActive: false });
+}
+
+export async function activateUserService(input: { userId: string }) {
+  return setUserActivationService({ userId: input.userId, isActive: true });
+}
+
+async function setUserActivationService(input: {
+  userId: string;
+  isActive: boolean;
+}) {
+  const user = await getUserById(input.userId);
+  if (!user) throw { status: 404, message: "User not found" };
+
+  if (user.isActive === input.isActive) {
+    return { user: sanitizeUser(user) };
+  }
+
+  const updated = await updateUser(user.id, { isActive: input.isActive });
+  return { user: sanitizeUser(updated) };
 }
 
 function sanitizeUser<T extends { password?: string | null }>(user: T) {

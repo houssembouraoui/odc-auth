@@ -46,10 +46,13 @@ your-backend-project/
 │   ├── middleware/
 │   │   ├── auth.middleware.ts
 │   │   └── error.middleware.ts
+│   ├── utils/
+│   │    ├── token.util.ts
+│   │    ├── email.util.ts
+│   │    └── hash.util.ts
+│   ├── validators/
+│   │   └── auth.schema.ts
 │   └── utils/
-│       ├── token.util.ts
-│       ├── email.util.ts
-│       └── hash.util.ts
 ├── prisma/
 │   └── schema.prisma
 ├── docker-compose.yml

@@ -11,6 +11,7 @@ model User {
   password          String
   name              String?
   isVerified        Boolean  @default(false)
+  isActive          Boolean  @default(true)
   verificationToken String?
   resetToken        String?
   createdAt         DateTime @default(now())

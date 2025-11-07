@@ -13,6 +13,7 @@ import {
   changePasswordSchema,
   verifyEmailSchema,
   resendVerificationSchema,
+  userActivationSchema,
 } from "../validators/auth.schemas";
 
 export const authRouter = Router();
@@ -71,4 +72,18 @@ authRouter.post(
   "/resend-verification",
   validate({ body: resendVerificationSchema }),
   authController.resendVerification
+);
+
+authRouter.post(
+  "/users/deactivate",
+  validate({ body: userActivationSchema }),
+  authMiddleware,
+  authController.deactivateUser
+);
+
+authRouter.post(
+  "/users/activate",
+  validate({ body: userActivationSchema }),
+  authMiddleware,
+  authController.activateUser
 );

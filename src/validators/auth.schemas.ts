@@ -71,3 +71,7 @@ export const resendVerificationSchema = z.object({
   emailLinkQueryName: z.string().optional(),
   emailLinkTemplateText: z.string().optional(),
 });
+
+export const userActivationSchema = z.object({
+  userId: z.string().trim().uuid(),
+});

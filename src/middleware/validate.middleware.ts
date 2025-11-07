@@ -27,9 +27,9 @@ export function validate(schemas: ValidateSchemas) {
       if (err instanceof ZodError) {
         return res.status(400).json({
           message: "Validation failed",
-          errors: err.errors.map((e) => ({
-            path: e.path.join("."),
-            message: e.message,
+          errors: err.issues.map((issue) => ({
+            path: issue.path.join("."),
+            message: issue.message,
           })),
         });
       }

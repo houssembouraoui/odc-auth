@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resendVerification = exports.verifyEmail = exports.changePassword = exports.resetPassword = exports.forgotPassword = exports.revokeToken = exports.refreshToken = exports.me = exports.logout = exports.login = exports.register = void 0;
+exports.activateUser = exports.deactivateUser = exports.resendVerification = exports.verifyEmail = exports.changePassword = exports.resetPassword = exports.forgotPassword = exports.revokeToken = exports.refreshToken = exports.me = exports.logout = exports.login = exports.register = void 0;
 const auth_service_1 = require("../services/auth.service");
 const register = async (req, res, next) => {
     try {
@@ -132,6 +132,7 @@ const resendVerification = async (req, res, next) => {
             emailSubject: req.body?.emailSubject,
             emailTemplateKey: req.body?.emailTemplateKey,
             emailTemplateText: req.body?.emailTemplateText,
+            emailLinkTemplateText: req.body?.emailLinkTemplateText,
         });
         res.json(result);
     }
@@ -140,3 +141,23 @@ const resendVerification = async (req, res, next) => {
     }
 };
 exports.resendVerification = resendVerification;
+const deactivateUser = async (req, res, next) => {
+    try {
+        const result = await (0, auth_service_1.deactivateUserService)({ userId: req.body?.userId });
+        res.json(result);
+    }
+    catch (err) {
+        next(err);
+    }
+};
+exports.deactivateUser = deactivateUser;
+const activateUser = async (req, res, next) => {
+    try {
+        const result = await (0, auth_service_1.activateUserService)({ userId: req.body?.userId });
+        res.json(result);
+    }
+    catch (err) {
+        next(err);
+    }
+};
+exports.activateUser = activateUser;

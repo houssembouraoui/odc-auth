@@ -11,6 +11,8 @@ import {
   changePasswordService,
   verifyEmailService,
   resendVerificationService,
+  deactivateUserService,
+  activateUserService,
 } from "../services/auth.service";
 
 export const register = async (
@@ -176,6 +178,32 @@ export const resendVerification = async (
       emailTemplateText: req.body?.emailTemplateText,
       emailLinkTemplateText: req.body?.emailLinkTemplateText,
     });
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deactivateUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const result = await deactivateUserService({ userId: req.body?.userId });
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const activateUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const result = await activateUserService({ userId: req.body?.userId });
     res.json(result);
   } catch (err) {
     next(err);

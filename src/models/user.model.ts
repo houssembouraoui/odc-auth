@@ -4,6 +4,7 @@ export interface User {
   password: string;
   name?: string | null;
   isVerified: boolean;
+  isActive: boolean;
   verificationToken?: string | null;
   resetToken?: string | null;
   createdAt: Date;
