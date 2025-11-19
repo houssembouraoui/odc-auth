@@ -1,9 +1,6 @@
-FROM node:18-alpine AS builder
+FROM node:18 AS builder
 
 WORKDIR /app
-
-# Install build dependencies
-RUN apk add --no-cache python3 make g++
 
 COPY package*.json ./
 COPY prisma ./prisma/
@@ -15,16 +12,12 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:18-alpine
+FROM node:18-slim
 
 WORKDIR /app
 
-# Install OpenSSL 1.1 compatibility for Prisma + build tools
-RUN apk add --no-cache \
-    python3 \
-    make \
-    g++ \
-    openssl1.1-compat
+# Install OpenSSL
+RUN apt-get update -y && apt-get install -y openssl
 
 COPY package*.json ./
 COPY prisma ./prisma/
