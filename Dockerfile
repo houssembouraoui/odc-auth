@@ -2,22 +2,16 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Install build dependencies
+RUN apk add --no-cache python3 make g++
 
-# Copy prisma schema
+COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install dependencies
 RUN npm ci
-
-# Generate Prisma Client
 RUN npx prisma generate
 
-# Copy source code
 COPY . .
-
-# Build TypeScript
 RUN npm run build
 
 # Production stage
@@ -25,16 +19,17 @@ FROM node:18-alpine
 
 WORKDIR /app
 
+# Install build dependencies for native modules
+RUN apk add --no-cache python3 make g++
+
 COPY package*.json ./
 COPY prisma ./prisma/
 
+# Install production dependencies (bcrypt will compile here)
 RUN npm ci --only=production
-
 RUN npx prisma generate
 
 COPY --from=builder /app/dist ./dist
-
-RUN npm rebuild bcrypt --build-from-source
 
 EXPOSE 3000
 
