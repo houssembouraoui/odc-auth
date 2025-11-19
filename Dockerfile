@@ -1,24 +1,18 @@
-# Stage 1: Build
-FROM node:20-slim AS builder
+FROM node:18-alpine
+
 WORKDIR /app
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3 make g++ \
-  && rm -rf /var/lib/apt/lists/*
+
 COPY package*.json ./
+COPY prisma ./prisma/
+
 RUN npm ci
+RUN npx prisma generate
+
 COPY . .
+
 RUN npm run build
 RUN npm rebuild bcrypt --build-from-source
 
-# Stage 2: Run
-FROM node:20-slim
-WORKDIR /app
-ENV NODE_ENV=production
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends openssl ca-certificates \
-  && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/prisma ./prisma
-COPY package*.json ./
-CMD ["node", "dist/app/server.js"]
+EXPOSE 3000
+
+CMD ["node", "dist/index.js"]

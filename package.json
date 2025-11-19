@@ -4,7 +4,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/app/server.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "start": "node dist/app/server.js",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:generate": "prisma generate"
