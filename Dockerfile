@@ -19,13 +19,16 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Install build dependencies for native modules
-RUN apk add --no-cache python3 make g++
+# Install OpenSSL 1.1 compatibility for Prisma + build tools
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    openssl1.1-compat
 
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install production dependencies (bcrypt will compile here)
 RUN npm ci --only=production
 RUN npx prisma generate
 
