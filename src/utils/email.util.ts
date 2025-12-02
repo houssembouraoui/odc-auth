@@ -3,6 +3,8 @@ import { ENV } from "../config/env";
 
 const transporter = nodemailer.createTransport({
   host: ENV.EMAIL_HOST,
+  port: ENV.EMAIL_PORT,
+  secure: ENV.EMAIL_SECURE,
   auth: {
     user: ENV.EMAIL_USER,
     pass: ENV.EMAIL_PASS,
@@ -10,7 +12,12 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function sendMail(to: string, subject: string, text: string) {
-  return transporter.sendMail({ from: ENV.EMAIL_USER, to, subject, text });
+  try {
+    return await transporter.sendMail({ from: ENV.EMAIL_USER, to, subject, text });
+  } catch (err) {
+    console.error("Email send failed", err);
+    throw err;
+  }
 }
 
 type TemplateMap = Record<string, string>;
