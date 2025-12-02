@@ -11,13 +11,21 @@ const nodemailer_1 = __importDefault(require("nodemailer"));
 const env_1 = require("../config/env");
 const transporter = nodemailer_1.default.createTransport({
     host: env_1.ENV.EMAIL_HOST,
+    port: env_1.ENV.EMAIL_PORT,
+    secure: env_1.ENV.EMAIL_SECURE,
     auth: {
         user: env_1.ENV.EMAIL_USER,
         pass: env_1.ENV.EMAIL_PASS,
     },
 });
 async function sendMail(to, subject, text) {
-    return transporter.sendMail({ from: env_1.ENV.EMAIL_USER, to, subject, text });
+    try {
+        return await transporter.sendMail({ from: env_1.ENV.EMAIL_USER, to, subject, text });
+    }
+    catch (err) {
+        console.error("Email send failed", err);
+        throw err;
+    }
 }
 const defaultTemplates = {
     welcomeTempPassword: "Hello {{nameOrEmail}},\n\nWelcome aboard! Your temporary password is: {{tempPassword}}\n\nPlease sign in and change it immediately from your account settings.{{actionUrl?}}\n\nThanks,\nODC Auth Team",

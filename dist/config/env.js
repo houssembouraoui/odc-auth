@@ -18,6 +18,8 @@ exports.ENV = {
     JWT_ACCESS_SECRET: getEnv("JWT_ACCESS_SECRET"),
     JWT_REFRESH_SECRET: getEnv("JWT_REFRESH_SECRET"),
     EMAIL_HOST: getEnv("EMAIL_HOST"),
+    EMAIL_PORT: Number(getEnv("EMAIL_PORT", "587")),
+    EMAIL_SECURE: getEnv("EMAIL_SECURE", "false") === "true",
     EMAIL_USER: getEnv("EMAIL_USER"),
     EMAIL_PASS: getEnv("EMAIL_PASS"),
 };
