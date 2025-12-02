@@ -25,7 +25,7 @@ A reusable, standalone authentication service that can run locally and be integr
 Layered, maintainable project structure:
 
 ```
-your-backend-project/
+ODC-auth/
 ├── src/
 │   ├── app/
 │   │   ├── server.ts
@@ -36,11 +36,14 @@ your-backend-project/
 │   ├── models/
 │   │   └── user.model.ts
 │   ├── routes/
-│   │   └── auth.routes.ts
+│   │   ├── auth.routes.ts
+│   │   └── sync.routes.ts
 │   ├── controllers/
-│   │   └── auth.controller.ts
+│   │   ├── auth.controller.ts
+│   │   └── sync.controller.ts
 │   ├── services/
-│   │   └── auth.service.ts
+│   │   ├── auth.service.ts
+│   │   └── sync.service.ts
 │   ├── repositories/
 │   │   └── user.repository.ts
 │   ├── middleware/
@@ -97,6 +100,8 @@ model User {
 |                     | POST   | /auth/password/change     | Change password (authenticated)      |
 | Email Verification  | POST   | /auth/verify-email        | Verify email using token             |
 |                     | POST   | /auth/resend-verification | Resend verification email            |
+| Sync (API ↔ Auth)   | GET    | /sync/preview             | Preview users to be removed          |
+|                     | POST   | /sync/users               | Remove orphaned users from auth DB   |
 
 ---
 
@@ -198,6 +203,7 @@ Set these in `.env`:
 
 ```
 DATABASE_URL=postgresql://postgres:password@db:5432/odc_auth
+API_DATABASE_URL=postgresql://postgres:password@api-db:5432/your_api_db # used for sync endpoints
 JWT_ACCESS_SECRET=your_access_secret
 JWT_REFRESH_SECRET=your_refresh_secret
 EMAIL_HOST=smtp.example.com
@@ -233,6 +239,23 @@ PORT=4000
 
 - Develop or configure your main application to consume odc-auth's HTTP endpoints for all authentication needs.
 - odc-auth is fully decoupled; no direct integration required outside API communication.
+
+### Syncing with External API Database
+
+The `/sync` endpoints let you keep the odc-auth user database in sync with your main API service database:
+
+- `/sync/preview` (GET): compares user emails between the API database and odc-auth, and returns:
+  - `stats`: counts of users in each database and how many would be removed.
+  - `orphanedUsers`: list of users existing only in odc-auth.
+- `/sync/users` (POST): performs the same comparison and deletes those orphaned users from odc-auth.
+
+Requirements on the external API side:
+
+- `API_DATABASE_URL` must point to your API service database.
+- The API database must have a `user` table with at least an `email` column.
+- Emails are compared case-insensitively.
+
+You should typically call `/sync/preview` first to review what will be removed, then `/sync/users` when you are comfortable applying the changes.
 
 ---
 
