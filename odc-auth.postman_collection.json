@@ -5,7 +5,26 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "description": "Auth endpoints collection."
   },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000",
+      "type": "string"
+    }
+  ],
   "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
     {
       "name": "Register",
       "request": {
@@ -18,10 +37,8 @@
           "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"P@ssw0rd!\",\n  \"name\": \"Jane Doe\"\n}"
         },
         "url": {
-          "raw": "http://localhost:4000/api/auth/register",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "4000",
+          "raw": "{{baseUrl}}/api/auth/register",
+          "host": ["{{baseUrl}}"],
           "path": ["api", "auth", "register"]
         }
       }
@@ -38,10 +55,8 @@
           "raw": "{\n  \"email\": \"tempuser@example.com\",\n  \"name\": \"Temp User\",\n  \"emailSubject\": \"Your ODC temp password\",\n  \"emailTemplateKey\": \"welcomeTempPassword\"\n}"
         },
         "url": {
-          "raw": "http://localhost:4000/api/auth/register",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "4000",
+          "raw": "{{baseUrl}}/api/auth/register",
+          "host": ["{{baseUrl}}"],
           "path": ["api", "auth", "register"]
         }
       }
@@ -58,10 +73,8 @@
           "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"P@ssw0rd!\"\n}"
         },
         "url": {
-          "raw": "http://localhost:4000/api/auth/login",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "4000",
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": ["{{baseUrl}}"],
           "path": ["api", "auth", "login"]
         }
       }
@@ -79,10 +92,8 @@
           "raw": "{\n  \"refreshToken\": \"<refresh-token>\"\n}"
         },
         "url": {
-          "raw": "http://localhost:4000/api/auth/logout",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "4000",
+          "raw": "{{baseUrl}}/api/auth/logout",
+          "host": ["{{baseUrl}}"],
           "path": ["api", "auth", "logout"]
         }
       }
@@ -99,10 +110,8 @@
           "raw": "{\n  \"refreshToken\": \"<refresh-token>\"\n}"
         },
         "url": {
-          "raw": "http://localhost:4000/api/auth/refresh",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "4000",
+          "raw": "{{baseUrl}}/api/auth/refresh",
+          "host": ["{{baseUrl}}"],
           "path": ["api", "auth", "refresh"]
         }
       }
@@ -119,10 +128,8 @@
           "raw": "{\n  \"refreshToken\": \"<refresh-token>\"\n}"
         },
         "url": {
-          "raw": "http://localhost:4000/api/auth/token/revoke",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "4000",
+          "raw": "{{baseUrl}}/api/auth/token/revoke",
+          "host": ["{{baseUrl}}"],
           "path": ["api", "auth", "token", "revoke"]
         }
       }
@@ -139,10 +146,8 @@
           "raw": "{\n  \"email\": \"user@example.com\",\n  \"emailSubject\": \"Reset your password\",\n  \"emailTemplateKey\": \"passwordReset\",\n  \"emailLinkBase\": \"https://app.example.com/reset-password\",\n  \"emailLinkQueryName\": \"token\"\n}"
         },
         "url": {
-          "raw": "http://localhost:4000/api/auth/password/forgot",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "4000",
+          "raw": "{{baseUrl}}/api/auth/password/forgot",
+          "host": ["{{baseUrl}}"],
           "path": ["api", "auth", "password", "forgot"]
         }
       }
@@ -159,10 +164,8 @@
           "raw": "{\n  \"token\": \"<reset-token>\",\n  \"newPassword\": \"N3wP@ssw0rd!\"\n}"
         },
         "url": {
-          "raw": "http://localhost:4000/api/auth/password/reset",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "4000",
+          "raw": "{{baseUrl}}/api/auth/password/reset",
+          "host": ["{{baseUrl}}"],
           "path": ["api", "auth", "password", "reset"]
         }
       }
@@ -180,10 +183,8 @@
           "raw": "{\n  \"currentPassword\": \"P@ssw0rd!\",\n  \"newPassword\": \"N3wP@ssw0rd!\"\n}"
         },
         "url": {
-          "raw": "http://localhost:4000/api/auth/password/change",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "4000",
+          "raw": "{{baseUrl}}/api/auth/password/change",
+          "host": ["{{baseUrl}}"],
           "path": ["api", "auth", "password", "change"]
         }
       }
@@ -200,10 +201,8 @@
           "raw": "{\n  \"token\": \"<verification-token>\"\n}"
         },
         "url": {
-          "raw": "http://localhost:4000/api/auth/verify-email",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "4000",
+          "raw": "{{baseUrl}}/api/auth/verify-email",
+          "host": ["{{baseUrl}}"],
           "path": ["api", "auth", "verify-email"]
         }
       }
@@ -220,10 +219,8 @@
           "raw": "{\n  \"email\": \"user@example.com\",\n  \"emailSubject\": \"Verify your email\",\n  \"emailTemplateKey\": \"verifyEmail\",\n  \"emailLinkTemplateText\": \"https://app.example.com/verify?code={{token}}\"\n}"
         },
         "url": {
-          "raw": "http://localhost:4000/api/auth/resend-verification",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "4000",
+          "raw": "{{baseUrl}}/api/auth/resend-verification",
+          "host": ["{{baseUrl}}"],
           "path": ["api", "auth", "resend-verification"]
         }
       }
@@ -236,10 +233,8 @@
           { "key": "Authorization", "value": "Bearer {{accessToken}}" }
         ],
         "url": {
-          "raw": "http://localhost:4000/api/auth/me",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "4000",
+          "raw": "{{baseUrl}}/api/auth/me",
+          "host": ["{{baseUrl}}"],
           "path": ["api", "auth", "me"]
         }
       }
@@ -250,10 +245,8 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:4000/api/sync/preview",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "4000",
+          "raw": "{{baseUrl}}/api/sync/preview",
+          "host": ["{{baseUrl}}"],
           "path": ["api", "sync", "preview"]
         },
         "description": "Preview which users in odc-auth would be removed because they don't exist in the external API database.\n\nRequirements:\n- The API service database must be reachable at API_DATABASE_URL.\n- The API service database must have a `user` table with an `email` column.\n\nThis endpoint does NOT delete anything; it only returns stats and the list of orphaned users."
@@ -269,10 +262,8 @@
           "raw": ""
         },
         "url": {
-          "raw": "http://localhost:4000/api/sync/users",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "4000",
+          "raw": "{{baseUrl}}/api/sync/users",
+          "host": ["{{baseUrl}}"],
           "path": ["api", "sync", "users"]
         },
         "description": "Remove users from odc-auth that don't exist in the external API database.\n\nRequirements:\n- The API service database must be reachable at API_DATABASE_URL.\n- The API service database must have a `user` table with an `email` column.\n\nUse the preview endpoint first to see what will be removed."
