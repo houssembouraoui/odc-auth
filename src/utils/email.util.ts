@@ -1,18 +1,16 @@
-// Complete fixed version of email.util.ts for the auth service
-// Replace the existing email.util.ts file with this code
-
-import nodemailer from "nodemailer";
+import {
+  TransactionalEmailsApi,
+  SendSmtpEmail,
+  TransactionalEmailsApiApiKeys,
+} from "@getbrevo/brevo";
 import { ENV } from "../config/env";
 
-const transporter = nodemailer.createTransport({
-  host: ENV.EMAIL_HOST,
-  port: ENV.EMAIL_PORT,
-  secure: ENV.EMAIL_SECURE,
-  auth: {
-    user: ENV.EMAIL_USER,
-    pass: ENV.EMAIL_PASS,
-  },
-});
+// Initialize Brevo API client
+const transactionalEmailsApi = new TransactionalEmailsApi();
+transactionalEmailsApi.setApiKey(
+  TransactionalEmailsApiApiKeys.apiKey,
+  ENV.BREVO_API_KEY
+);
 
 /**
  * Helper function to strip HTML tags for plain text fallback
@@ -38,26 +36,51 @@ export async function sendMail(
   html?: string
 ) {
   try {
-    const mailOptions: any = {
-      from: ENV.EMAIL_USER,
-      to,
+    if (!text && !html) {
+      throw new Error("Either text or html must be provided");
+    }
+
+    // Parse sender email and name
+    const senderEmail = ENV.EMAIL_FROM;
+    const senderName = ENV.EMAIL_FROM_NAME || "ODC Auth";
+
+    // Build the email message
+    const sendSmtpEmail: SendSmtpEmail = {
+      to: [{ email: to }],
       subject,
+      sender: {
+        email: senderEmail,
+        name: senderName,
+      },
     };
 
     // If HTML is provided, use it; otherwise use text
     if (html) {
-      mailOptions.html = html;
+      sendSmtpEmail.htmlContent = html;
       // Also provide text version for email clients that don't support HTML
-      mailOptions.text = text || stripHtml(html);
+      sendSmtpEmail.textContent = text || stripHtml(html);
     } else if (text) {
-      mailOptions.text = text;
-    } else {
-      throw new Error("Either text or html must be provided");
+      sendSmtpEmail.textContent = text;
     }
 
-    return await transporter.sendMail(mailOptions);
-  } catch (err) {
+    // Add timeout wrapper to prevent indefinite hanging
+    const sendPromise = transactionalEmailsApi.sendTransacEmail(sendSmtpEmail);
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => {
+        reject(new Error("Email send timeout: Request took longer than 30 seconds"));
+      }, 30000); // 30 second overall timeout
+    });
+
+    const result = await Promise.race([sendPromise, timeoutPromise]);
+    return result;
+  } catch (err: any) {
     console.error("Email send failed", err);
+    // Extract error message from Brevo API response if available
+    if (err?.response?.body) {
+      throw new Error(
+        `Email send failed: ${JSON.stringify(err.response.body)}`
+      );
+    }
     throw err;
   }
 }
@@ -137,3 +160,23 @@ export async function sendTemplatedMail(params: {
 }
 
 export const EmailTemplates = defaultTemplates;
+
+/**
+ * Verify the email API connection
+ * Useful for debugging email configuration issues
+ */
+export async function verifyEmailConnection(): Promise<boolean> {
+  try {
+    // Brevo doesn't have a direct verify method, so we'll test by sending a minimal request
+    // For now, we'll just check if the API key is set
+    if (!ENV.BREVO_API_KEY) {
+      console.error("BREVO_API_KEY is not set");
+      return false;
+    }
+    console.log("Brevo API key is configured");
+    return true;
+  } catch (error) {
+    console.error("Email API connection verification failed:", error);
+    return false;
+  }
+}

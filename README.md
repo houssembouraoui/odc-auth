@@ -16,7 +16,7 @@ A reusable, standalone authentication service that can run locally and be integr
 - **Containerization:** Docker + Docker Compose
 - **Authentication:** JWT (Access & Refresh Tokens)
 - **Hashing:** bcrypt
-- **Email Sending:** Nodemailer (or config-ready placeholder)
+- **Email Sending:** Brevo (formerly Sendinblue)
 
 ---
 
@@ -206,9 +206,9 @@ DATABASE_URL=postgresql://postgres:password@db:5432/odc_auth
 API_DATABASE_URL=postgresql://postgres:password@api-db:5432/your_api_db # used for sync endpoints
 JWT_ACCESS_SECRET=your_access_secret
 JWT_REFRESH_SECRET=your_refresh_secret
-EMAIL_HOST=smtp.example.com
-EMAIL_USER=example@example.com
-EMAIL_PASS=examplepassword
+BREVO_API_KEY=xkeysib-your-brevo-api-key-here
+EMAIL_FROM=your-email@example.com
+EMAIL_FROM_NAME=ODC Auth
 PORT=4000
 ```
 
