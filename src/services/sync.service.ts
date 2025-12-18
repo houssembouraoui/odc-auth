@@ -10,6 +10,24 @@ const apiPrisma = new PrismaClient({
   },
 });
 
+type SyncOptions = {
+  /**
+   * Emails that should NEVER be considered orphaned, even if they don't
+   * exist in the API service database (e.g. admin accounts).
+   */
+  protectedEmails?: string[];
+};
+
+function buildProtectedEmailSet(options?: SyncOptions): Set<string> {
+  const emails = options?.protectedEmails || [];
+  return new Set(
+    emails
+      .map((e) => e?.trim())
+      .filter((e): e is string => Boolean(e))
+      .map((e) => e.toLowerCase())
+  );
+}
+
 export const syncService = {
   async getApiServiceEmails(): Promise<Set<string>> {
     try {
@@ -26,15 +44,18 @@ export const syncService = {
   },
 
   /**
-   * Preview orphaned users without deleting
+   * Preview orphaned users without deleting.
+   * Admin / special accounts can be protected via `protectedEmails`.
    */
-  async previewOrphanedUsers() {
+  async previewOrphanedUsers(options?: SyncOptions) {
     const apiEmails = await this.getApiServiceEmails();
     const authUsers = await getAllUsers();
+    const protectedSet = buildProtectedEmailSet(options);
 
-    const orphanedUsers = authUsers.filter(
-      (user) => apiEmails.has(user.email.toLowerCase()) === false
-    );
+    const orphanedUsers = authUsers.filter((user) => {
+      const email = user.email.toLowerCase();
+      return apiEmails.has(email) === false && protectedSet.has(email) === false;
+    });
 
     return {
       stats: {
@@ -52,15 +73,18 @@ export const syncService = {
   },
 
   /**
-   * Remove orphaned users from auth service
+   * Remove orphaned users from auth service.
+   * Admin / special accounts can be protected via `protectedEmails`.
    */
-  async removeOrphanedUsers() {
+  async removeOrphanedUsers(options?: SyncOptions) {
     const apiEmails = await this.getApiServiceEmails();
     const authUsers = await getAllUsers();
+    const protectedSet = buildProtectedEmailSet(options);
 
-    const orphanedUsers = authUsers.filter(
-      (user) => apiEmails.has(user.email.toLowerCase()) === false
-    );
+    const orphanedUsers = authUsers.filter((user) => {
+      const email = user.email.toLowerCase();
+      return apiEmails.has(email) === false && protectedSet.has(email) === false;
+    });
 
     const authServiceUsersBefore = authUsers.length;
 

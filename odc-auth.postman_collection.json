@@ -249,24 +249,26 @@
           "host": ["{{baseUrl}}"],
           "path": ["api", "sync", "preview"]
         },
-        "description": "Preview which users in odc-auth would be removed because they don't exist in the external API database.\n\nRequirements:\n- The API service database must be reachable at API_DATABASE_URL.\n- The API service database must have a `user` table with an `email` column.\n\nThis endpoint does NOT delete anything; it only returns stats and the list of orphaned users."
+        "description": "Preview which users in odc-auth would be removed because they don't exist in the external API database.\n\nRequirements:\n- The API service database must be reachable at API_DATABASE_URL.\n- The API service database must have a `user` table with an `email` column.\n\nThis endpoint does NOT delete anything; it only returns stats and the list of orphaned users.\n\nProtecting admin/system accounts:\n- If you have admin or system users that live in a different table in your API DB, you can exclude them from the preview (and from deletion) by passing one or more `adminEmail` query params.\n- Examples:\n  - `GET /api/sync/preview?adminEmail=admin@example.com`\n  - `GET /api/sync/preview?adminEmail=admin@example.com,support@example.com`\n  - `GET /api/sync/preview?adminEmail=admin@example.com&adminEmail=support@example.com`"
       }
     },
     {
       "name": "Sync - Remove Orphaned Users",
       "request": {
         "method": "POST",
-        "header": [],
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
         "body": {
           "mode": "raw",
-          "raw": ""
+          "raw": "{\n  \"adminEmail\": \"admin@example.com\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/sync/users",
           "host": ["{{baseUrl}}"],
           "path": ["api", "sync", "users"]
         },
-        "description": "Remove users from odc-auth that don't exist in the external API database.\n\nRequirements:\n- The API service database must be reachable at API_DATABASE_URL.\n- The API service database must have a `user` table with an `email` column.\n\nUse the preview endpoint first to see what will be removed."
+        "description": "Remove users from odc-auth that don't exist in the external API database.\n\nRequirements:\n- The API service database must be reachable at API_DATABASE_URL.\n- The API service database must have a `user` table with an `email` column.\n\nUse the preview endpoint first to see what will be removed.\n\nProtecting admin/system accounts:\n- You can prevent admin or system users from being deleted by specifying one or more admin emails in the request body.\n- Examples:\n  - `{ \"adminEmail\": \"admin@example.com\" }`\n  - `{ \"adminEmails\": [\"admin@example.com\", \"support@example.com\"] }`\n\nAny email provided this way will not be considered orphaned and will not be deleted."
       }
     }
   ]

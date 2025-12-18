@@ -307,6 +307,37 @@ Requirements on the external API side:
 
 You should typically call `/sync/preview` first to review what will be removed, then `/sync/users` when you are comfortable applying the changes.
 
+#### Protecting Admin / System Accounts from Deletion
+
+Often, admin or system users live in a different table in your API database and would otherwise be treated as "orphaned" and deleted.  
+To avoid this, you can explicitly pass one or more admin emails to **exclude them from orphan detection and deletion**:
+
+- **Preview (GET)** — pass emails in the query string:
+
+```text
+GET /api/sync/preview?adminEmail=admin@example.com
+GET /api/sync/preview?adminEmail=admin@example.com,support@example.com
+GET /api/sync/preview?adminEmail=admin@example.com&adminEmail=support@example.com
+```
+
+- **Sync (POST)** — pass emails in the request body:
+
+```json
+{
+  "adminEmail": "admin@example.com"
+}
+```
+
+or
+
+```json
+{
+  "adminEmails": ["admin@example.com", "support@example.com"]
+}
+```
+
+Any email provided this way will **never** be listed under `orphanedUsers` and will **never** be deleted by `/api/sync/users`, even if it does not exist in the API service database.
+
 ---
 
 ## Boilerplate Generation
