@@ -111,7 +111,7 @@ model User {
 - Store refresh tokens in DB (or hashed).
 - Passwords hashed with bcrypt.
 - Protected routes with `auth.middleware.ts` (verifies access token).
-- Global error handling via `error.middleware.ts`.
+- Global error handling via `error.middleware.ts`, returning structured JSON errors.
 - Run with Docker Compose: `docker-compose up --build` spins up the Node server and PostgreSQL database.
 - Prisma migrations auto-run on container startup.
 
@@ -239,6 +239,56 @@ PORT=4000
 
 - Develop or configure your main application to consume odc-auth's HTTP endpoints for all authentication needs.
 - odc-auth is fully decoupled; no direct integration required outside API communication.
+
+### Error Response Format
+
+All errors are returned as JSON with a consistent, developer-friendly shape so you can easily display or log the real cause instead of only seeing the HTTP status code from your HTTP client:
+
+```json
+{
+  "statusCode": 400,
+  "error": "Bad Request",
+  "message": "Email already in use",
+  "path": "/api/auth/register",
+  "method": "POST",
+  "timestamp": "2025-01-01T12:00:00.000Z",
+  "details": {
+    "optional": "structured extra information when available"
+  }
+}
+```
+
+- **Validation errors** (from `validate.middleware.ts`) include a `details` array:
+
+```json
+{
+  "statusCode": 400,
+  "error": "Bad Request",
+  "message": "Validation failed",
+  "path": "/api/auth/login",
+  "method": "POST",
+  "timestamp": "2025-01-01T12:00:00.000Z",
+  "details": [
+    { "path": "email", "message": "Invalid email address" },
+    { "path": "password", "message": "Password must be at least 8 characters" }
+  ]
+}
+```
+
+- **Auth middleware errors** (missing/invalid access token) use the same structure with a clear cause, e.g.:
+
+```json
+{
+  "statusCode": 401,
+  "error": "Unauthorized",
+  "message": "Missing access token",
+  "path": "/api/auth/me",
+  "method": "GET",
+  "timestamp": "2025-01-01T12:00:00.000Z"
+}
+```
+
+In your application, prefer reading `error.response.data.message` (and optionally `statusCode` / `details`) from your HTTP client instead of only relying on the generic error string like `"Request failed with status code 400"`.
 
 ### Syncing with External API Database
 

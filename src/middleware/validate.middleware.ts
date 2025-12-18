@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { STATUS_CODES } from "http";
 import { ZodSchema, ZodError } from "zod";
 
 type ValidateSchemas = {
@@ -25,9 +26,17 @@ export function validate(schemas: ValidateSchemas) {
       return next();
     } catch (err) {
       if (err instanceof ZodError) {
-        return res.status(400).json({
+        const status = 400;
+        const statusText = STATUS_CODES[status] || "Bad Request";
+
+        return res.status(status).json({
+          statusCode: status,
+          error: statusText,
           message: "Validation failed",
-          errors: err.issues.map((issue) => ({
+          path: req.originalUrl,
+          method: req.method,
+          timestamp: new Date().toISOString(),
+          details: err.issues.map((issue) => ({
             path: issue.path.join("."),
             message: issue.message,
           })),
