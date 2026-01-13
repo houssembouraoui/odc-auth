@@ -18,6 +18,6 @@ exports.ENV = {
     JWT_ACCESS_SECRET: getEnv("JWT_ACCESS_SECRET"),
     JWT_REFRESH_SECRET: getEnv("JWT_REFRESH_SECRET"),
     BREVO_API_KEY: getEnv("BREVO_API_KEY"),
-    EMAIL_FROM: getEnv("EMAIL_FROM"), // Sender email address
+    EMAIL_FROM: getEnv("EMAIL_FROM"),
     EMAIL_FROM_NAME: getEnv("EMAIL_FROM_NAME", "ODC Auth"), // Sender name
 };

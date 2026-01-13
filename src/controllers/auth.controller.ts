@@ -13,6 +13,8 @@ import {
   resendVerificationService,
   deactivateUserService,
   activateUserService,
+  deleteAccountService,
+  softDeleteUserService,
 } from "../services/auth.service";
 
 export const register = async (
@@ -204,6 +206,38 @@ export const activateUser = async (
 ) => {
   try {
     const result = await activateUserService({ userId: req.body?.userId });
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = (req as any).user?.sub as string;
+    const result = await deleteAccountService({ userId });
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const softDeleteUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const adminEmail = (req as any).user?.email as string;
+    const targetUserId = req.body?.userId;
+    const result = await softDeleteUserService({
+      adminEmail,
+      targetUserId,
+    });
     res.json(result);
   } catch (err) {
     next(err);

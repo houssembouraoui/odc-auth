@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { STATUS_CODES } from "http";
 import { verifyToken } from "../utils/token.util";
+import { getUserById } from "../repositories/user.repository";
 
-export function authMiddleware(
+export async function authMiddleware(
   req: Request,
   res: Response,
   next: NextFunction
@@ -22,9 +23,44 @@ export function authMiddleware(
   }
   const token = authHeader.split(" ")[1];
   try {
-    const user = verifyToken(token);
-    (req as any).user = user;
-    next();
+    const decoded = verifyToken(token);
+    const userId = (decoded as any).sub as string;
+    
+    // Check if user exists and is active
+    try {
+      const user = await getUserById(userId);
+      if (!user) {
+        const status = 401;
+        const statusText = STATUS_CODES[status] || "Unauthorized";
+        return res.status(status).json({
+          statusCode: status,
+          error: statusText,
+          message: "User not found",
+          path: req.originalUrl,
+          method: req.method,
+          timestamp: new Date().toISOString(),
+        });
+      }
+      
+      if (!user.isActive) {
+        const status = 403;
+        const statusText = STATUS_CODES[status] || "Forbidden";
+        return res.status(status).json({
+          statusCode: status,
+          error: statusText,
+          message: "User account is deactivated",
+          path: req.originalUrl,
+          method: req.method,
+          timestamp: new Date().toISOString(),
+        });
+      }
+      
+      (req as any).user = decoded;
+      next();
+    } catch (dbErr) {
+      // Database errors should be passed to error middleware
+      next(dbErr);
+    }
   } catch (err) {
     const status = 401;
     const statusText = STATUS_CODES[status] || "Unauthorized";

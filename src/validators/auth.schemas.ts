@@ -75,3 +75,11 @@ export const resendVerificationSchema = z.object({
 export const userActivationSchema = z.object({
   userId: z.string().trim().uuid(),
 });
+
+export const deleteAccountSchema = z.object({
+  // No body required for self-delete, but we'll validate if provided
+}).passthrough();
+
+export const softDeleteUserSchema = z.object({
+  userId: z.string().trim().uuid(),
+});

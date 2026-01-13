@@ -14,6 +14,8 @@ import {
   verifyEmailSchema,
   resendVerificationSchema,
   userActivationSchema,
+  deleteAccountSchema,
+  softDeleteUserSchema,
 } from "../validators/auth.schemas";
 
 export const authRouter = Router();
@@ -86,4 +88,18 @@ authRouter.post(
   validate({ body: userActivationSchema }),
   authMiddleware,
   authController.activateUser
+);
+
+authRouter.delete(
+  "/account",
+  validate({ body: deleteAccountSchema }),
+  authMiddleware,
+  authController.deleteAccount
+);
+
+authRouter.post(
+  "/users/soft-delete",
+  validate({ body: softDeleteUserSchema }),
+  authMiddleware,
+  authController.softDeleteUser
 );

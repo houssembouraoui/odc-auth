@@ -240,6 +240,41 @@
       }
     },
     {
+      "name": "Delete Account",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/account",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "account"]
+        },
+        "description": "Delete your own account completely (hard delete). This action cannot be undone. The user must be authenticated."
+      }
+    },
+    {
+      "name": "Soft Delete User (Admin)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"<user-id-to-soft-delete>\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/users/soft-delete",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "users", "soft-delete"]
+        },
+        "description": "Soft delete a user account (set isActive=false). Only admins can perform this action.\n\nRequirements:\n- The authenticated user must be an admin (email must be in ADMIN_EMAILS environment variable).\n- Admins cannot soft delete themselves.\n- Admins cannot soft delete other admins.\n\nThis sets the user's isActive field to false, preventing them from logging in or accessing protected endpoints."
+      }
+    },
+    {
       "name": "Sync - Preview Orphaned Users",
       "request": {
         "method": "GET",

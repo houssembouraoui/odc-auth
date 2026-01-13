@@ -76,6 +76,7 @@ model User {
   password          String
   name              String?
   isVerified        Boolean  @default(false)
+  isActive          Boolean  @default(true)
   verificationToken String?
   resetToken        String?
   createdAt         DateTime @default(now())
@@ -100,6 +101,10 @@ model User {
 |                     | POST   | /auth/password/change     | Change password (authenticated)      |
 | Email Verification  | POST   | /auth/verify-email        | Verify email using token             |
 |                     | POST   | /auth/resend-verification | Resend verification email            |
+| Account Management  | DELETE | /auth/account             | Delete own account (hard delete)    |
+|                     | POST   | /auth/users/soft-delete   | Soft delete user (admin only, sets isActive=false) |
+|                     | POST   | /auth/users/deactivate    | Deactivate user (sets isActive=false) |
+|                     | POST   | /auth/users/activate      | Activate user (sets isActive=true)   |
 | Sync (API ↔ Auth)   | GET    | /sync/preview             | Preview users to be removed          |
 |                     | POST   | /sync/users               | Remove orphaned users from auth DB   |
 
@@ -110,7 +115,11 @@ model User {
 - JWT Access Token (short-lived) & Refresh Token (long-lived).
 - Store refresh tokens in DB (or hashed).
 - Passwords hashed with bcrypt.
-- Protected routes with `auth.middleware.ts` (verifies access token).
+- Protected routes with `auth.middleware.ts` (verifies access token and checks if user is active).
+- **Active User Enforcement**: Only active users (isActive=true) can authenticate and access protected endpoints. The auth middleware automatically checks user status.
+- **Account Deletion**:
+  - Users can delete their own accounts completely (hard delete) via `DELETE /api/auth/account`.
+  - Admins can soft delete users (set isActive=false) via `POST /api/auth/users/soft-delete`. Admins cannot soft delete themselves or other admins.
 - Global error handling via `error.middleware.ts`, returning structured JSON errors.
 - Run with Docker Compose: `docker-compose up --build` spins up the Node server and PostgreSQL database.
 - Prisma migrations auto-run on container startup.
@@ -206,10 +215,13 @@ DATABASE_URL=postgresql://postgres:password@db:5432/odc_auth
 API_DATABASE_URL=postgresql://postgres:password@api-db:5432/your_api_db # used for sync endpoints
 JWT_ACCESS_SECRET=your_access_secret
 JWT_REFRESH_SECRET=your_refresh_secret
+JWT_ACCESS_TOKEN_EXPIRES_IN=15m # access token expiration (default: 15m)
+JWT_REFRESH_TOKEN_EXPIRES_IN=7d # refresh token expiration (default: 7d)
 BREVO_API_KEY=xkeysib-your-brevo-api-key-here
 EMAIL_FROM=your-email@example.com
 EMAIL_FROM_NAME=ODC Auth
 PORT=4000
+ADMIN_EMAILS=admin@example.com,superadmin@example.com # comma-separated list of admin emails (optional)
 ```
 
 ---

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validate = validate;
+const http_1 = require("http");
 const zod_1 = require("zod");
 function validate(schemas) {
     return (req, res, next) => {
@@ -21,9 +22,16 @@ function validate(schemas) {
         }
         catch (err) {
             if (err instanceof zod_1.ZodError) {
-                return res.status(400).json({
+                const status = 400;
+                const statusText = http_1.STATUS_CODES[status] || "Bad Request";
+                return res.status(status).json({
+                    statusCode: status,
+                    error: statusText,
                     message: "Validation failed",
-                    errors: err.issues.map((issue) => ({
+                    path: req.originalUrl,
+                    method: req.method,
+                    timestamp: new Date().toISOString(),
+                    details: err.issues.map((issue) => ({
                         path: issue.path.join("."),
                         message: issue.message,
                     })),

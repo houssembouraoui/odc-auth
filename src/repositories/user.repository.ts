@@ -44,3 +44,7 @@ export const deleteUsersByIds = async (userIds: string[]) => {
   });
 };
 
+export const deleteUserById = async (id: string): Promise<User> => {
+  return prisma.user.delete({ where: { id } });
+};
+

@@ -10,19 +10,25 @@ function requireSecret(value: string | undefined, name: string): Secret {
 
 export function generateAccessToken(
   payload: string | object | Buffer,
-  expiresIn: SignOptions["expiresIn"] = "15m"
+  expiresIn?: SignOptions["expiresIn"]
 ): string {
   const secret = requireSecret(ENV.JWT_ACCESS_SECRET, "JWT_ACCESS_SECRET");
-  const options: SignOptions = { expiresIn };
+  const options: SignOptions = {
+    expiresIn: (expiresIn ||
+      ENV.JWT_ACCESS_TOKEN_EXPIRES_IN) as SignOptions["expiresIn"],
+  };
   return jwt.sign(payload, secret, options);
 }
 
 export function generateRefreshToken(
   payload: string | object | Buffer,
-  expiresIn: SignOptions["expiresIn"] = "7d"
+  expiresIn?: SignOptions["expiresIn"]
 ): string {
   const secret = requireSecret(ENV.JWT_REFRESH_SECRET, "JWT_REFRESH_SECRET");
-  const options: SignOptions = { expiresIn };
+  const options: SignOptions = {
+    expiresIn: (expiresIn ||
+      ENV.JWT_REFRESH_TOKEN_EXPIRES_IN) as SignOptions["expiresIn"],
+  };
   return jwt.sign(payload, secret, options);
 }
 
