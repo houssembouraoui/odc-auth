@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userActivationSchema = exports.resendVerificationSchema = exports.verifyEmailSchema = exports.changePasswordSchema = exports.resetPasswordSchema = exports.forgotPasswordSchema = exports.revokeTokenSchema = exports.refreshTokenSchema = exports.logoutSchema = exports.loginSchema = exports.registerSchema = void 0;
+exports.softDeleteUserSchema = exports.deleteAccountSchema = exports.userActivationSchema = exports.resendVerificationSchema = exports.verifyEmailSchema = exports.changePasswordSchema = exports.resetPasswordSchema = exports.forgotPasswordSchema = exports.revokeTokenSchema = exports.refreshTokenSchema = exports.logoutSchema = exports.loginSchema = exports.registerSchema = void 0;
 const zod_1 = require("zod");
 const emailField = zod_1.z.string().trim().email();
 const nonEmptyString = zod_1.z.string().trim().min(1);
@@ -63,5 +63,11 @@ exports.resendVerificationSchema = zod_1.z.object({
     emailLinkTemplateText: zod_1.z.string().optional(),
 });
 exports.userActivationSchema = zod_1.z.object({
+    userId: zod_1.z.string().trim().uuid(),
+});
+exports.deleteAccountSchema = zod_1.z.object({
+// No body required for self-delete, but we'll validate if provided
+}).passthrough();
+exports.softDeleteUserSchema = zod_1.z.object({
     userId: zod_1.z.string().trim().uuid(),
 });

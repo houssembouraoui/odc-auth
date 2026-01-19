@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.activateUser = exports.deactivateUser = exports.resendVerification = exports.verifyEmail = exports.changePassword = exports.resetPassword = exports.forgotPassword = exports.revokeToken = exports.refreshToken = exports.me = exports.logout = exports.login = exports.register = void 0;
+exports.softDeleteUser = exports.deleteAccount = exports.activateUser = exports.deactivateUser = exports.resendVerification = exports.verifyEmail = exports.changePassword = exports.resetPassword = exports.forgotPassword = exports.revokeToken = exports.refreshToken = exports.me = exports.logout = exports.login = exports.register = void 0;
 const auth_service_1 = require("../services/auth.service");
 const register = async (req, res, next) => {
     try {
@@ -161,3 +161,29 @@ const activateUser = async (req, res, next) => {
     }
 };
 exports.activateUser = activateUser;
+const deleteAccount = async (req, res, next) => {
+    try {
+        const userId = req.user?.sub;
+        const result = await (0, auth_service_1.deleteAccountService)({ userId });
+        res.json(result);
+    }
+    catch (err) {
+        next(err);
+    }
+};
+exports.deleteAccount = deleteAccount;
+const softDeleteUser = async (req, res, next) => {
+    try {
+        const adminEmail = req.user?.email;
+        const targetUserId = req.body?.userId;
+        const result = await (0, auth_service_1.softDeleteUserService)({
+            adminEmail,
+            targetUserId,
+        });
+        res.json(result);
+    }
+    catch (err) {
+        next(err);
+    }
+};
+exports.softDeleteUser = softDeleteUser;

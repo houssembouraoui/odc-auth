@@ -25,7 +25,7 @@ export async function authMiddleware(
   try {
     const decoded = verifyToken(token);
     const userId = (decoded as any).sub as string;
-    
+
     // Check if user exists and is active
     try {
       const user = await getUserById(userId);
@@ -41,7 +41,7 @@ export async function authMiddleware(
           timestamp: new Date().toISOString(),
         });
       }
-      
+
       if (!user.isActive) {
         const status = 403;
         const statusText = STATUS_CODES[status] || "Forbidden";
@@ -54,20 +54,27 @@ export async function authMiddleware(
           timestamp: new Date().toISOString(),
         });
       }
-      
+
       (req as any).user = decoded;
       next();
     } catch (dbErr) {
       // Database errors should be passed to error middleware
       next(dbErr);
     }
-  } catch (err) {
+  } catch (err: any) {
     const status = 401;
     const statusText = STATUS_CODES[status] || "Unauthorized";
+    // Log the actual error for debugging (you can remove this in production)
+    const errorMessage =
+      err?.name === "TokenExpiredError"
+        ? "Token has expired"
+        : err?.name === "JsonWebTokenError"
+        ? "Invalid token signature"
+        : err?.message || "Invalid or expired token";
     return res.status(status).json({
       statusCode: status,
       error: statusText,
-      message: "Invalid or expired token",
+      message: errorMessage,
       path: req.originalUrl,
       method: req.method,
       timestamp: new Date().toISOString(),

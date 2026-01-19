@@ -14,14 +14,20 @@ function requireSecret(value, name) {
     }
     return value;
 }
-function generateAccessToken(payload, expiresIn = "15m") {
+function generateAccessToken(payload, expiresIn) {
     const secret = requireSecret(env_1.ENV.JWT_ACCESS_SECRET, "JWT_ACCESS_SECRET");
-    const options = { expiresIn };
+    const options = {
+        expiresIn: (expiresIn ||
+            env_1.ENV.JWT_ACCESS_TOKEN_EXPIRES_IN),
+    };
     return jsonwebtoken_1.default.sign(payload, secret, options);
 }
-function generateRefreshToken(payload, expiresIn = "7d") {
+function generateRefreshToken(payload, expiresIn) {
     const secret = requireSecret(env_1.ENV.JWT_REFRESH_SECRET, "JWT_REFRESH_SECRET");
-    const options = { expiresIn };
+    const options = {
+        expiresIn: (expiresIn ||
+            env_1.ENV.JWT_REFRESH_TOKEN_EXPIRES_IN),
+    };
     return jsonwebtoken_1.default.sign(payload, secret, options);
 }
 function verifyToken(token, isRefresh = false) {

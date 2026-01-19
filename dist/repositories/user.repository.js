@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUsersByIds = exports.getAllUsers = exports.updateUser = exports.createUser = exports.getUserById = exports.getUserByEmail = void 0;
+exports.deleteUserById = exports.deleteUsersByIds = exports.getAllUsers = exports.updateUser = exports.createUser = exports.getUserById = exports.getUserByEmail = void 0;
 const database_1 = require("../config/database");
 const getUserByEmail = async (email) => {
     return database_1.prisma.user.findUnique({ where: { email } });
@@ -39,3 +39,7 @@ const deleteUsersByIds = async (userIds) => {
     });
 };
 exports.deleteUsersByIds = deleteUsersByIds;
+const deleteUserById = async (id) => {
+    return database_1.prisma.user.delete({ where: { id } });
+};
+exports.deleteUserById = deleteUserById;

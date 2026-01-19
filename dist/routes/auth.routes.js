@@ -53,3 +53,5 @@ exports.authRouter.post("/verify-email", (0, validate_middleware_1.validate)({ b
 exports.authRouter.post("/resend-verification", (0, validate_middleware_1.validate)({ body: auth_schemas_1.resendVerificationSchema }), authController.resendVerification);
 exports.authRouter.post("/users/deactivate", (0, validate_middleware_1.validate)({ body: auth_schemas_1.userActivationSchema }), auth_middleware_1.authMiddleware, authController.deactivateUser);
 exports.authRouter.post("/users/activate", (0, validate_middleware_1.validate)({ body: auth_schemas_1.userActivationSchema }), auth_middleware_1.authMiddleware, authController.activateUser);
+exports.authRouter.delete("/account", (0, validate_middleware_1.validate)({ body: auth_schemas_1.deleteAccountSchema }), auth_middleware_1.authMiddleware, authController.deleteAccount);
+exports.authRouter.post("/users/soft-delete", (0, validate_middleware_1.validate)({ body: auth_schemas_1.softDeleteUserSchema }), auth_middleware_1.authMiddleware, authController.softDeleteUser);

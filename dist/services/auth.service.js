@@ -13,10 +13,13 @@ exports.verifyEmailService = verifyEmailService;
 exports.resendVerificationService = resendVerificationService;
 exports.deactivateUserService = deactivateUserService;
 exports.activateUserService = activateUserService;
+exports.deleteAccountService = deleteAccountService;
+exports.softDeleteUserService = softDeleteUserService;
 const user_repository_1 = require("../repositories/user.repository");
 const hash_util_1 = require("../utils/hash.util");
 const token_util_1 = require("../utils/token.util");
 const email_util_1 = require("../utils/email.util");
+const admin_util_1 = require("../utils/admin.util");
 async function registerService(input) {
     const existing = await (0, user_repository_1.getUserByEmail)(input.email);
     if (existing) {
@@ -220,6 +223,41 @@ async function setUserActivationService(input) {
     }
     const updated = await (0, user_repository_1.updateUser)(user.id, { isActive: input.isActive });
     return { user: sanitizeUser(updated) };
+}
+/**
+ * Delete user account (hard delete) - users can delete their own account
+ */
+async function deleteAccountService(input) {
+    const user = await (0, user_repository_1.getUserById)(input.userId);
+    if (!user)
+        throw { status: 404, message: "User not found" };
+    await (0, user_repository_1.deleteUserById)(input.userId);
+    return { success: true, message: "Account deleted successfully" };
+}
+/**
+ * Soft delete user account (set isActive=false) - admins can soft delete users
+ */
+async function softDeleteUserService(input) {
+    // Verify admin
+    if (!(0, admin_util_1.isAdminEmail)(input.adminEmail)) {
+        throw { status: 403, message: "Only admins can soft delete users" };
+    }
+    const user = await (0, user_repository_1.getUserById)(input.targetUserId);
+    if (!user)
+        throw { status: 404, message: "User not found" };
+    // Prevent admins from soft deleting themselves
+    if (user.email.toLowerCase() === input.adminEmail.toLowerCase()) {
+        throw { status: 400, message: "Admins cannot soft delete themselves" };
+    }
+    // Prevent soft deleting other admins
+    if ((0, admin_util_1.isAdminEmail)(user.email)) {
+        throw { status: 403, message: "Cannot soft delete admin users" };
+    }
+    if (!user.isActive) {
+        return { user: sanitizeUser(user), message: "User is already deactivated" };
+    }
+    const updated = await (0, user_repository_1.updateUser)(user.id, { isActive: false });
+    return { user: sanitizeUser(updated), message: "User deactivated successfully" };
 }
 function sanitizeUser(user) {
     const { password, ...rest } = user;

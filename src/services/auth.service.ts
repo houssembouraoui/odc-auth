@@ -265,7 +265,7 @@ async function setUserActivationService(input: {
 export async function deleteAccountService(input: { userId: string }) {
   const user = await getUserById(input.userId);
   if (!user) throw { status: 404, message: "User not found" };
-  
+
   await deleteUserById(input.userId);
   return { success: true, message: "Account deleted successfully" };
 }
@@ -281,26 +281,29 @@ export async function softDeleteUserService(input: {
   if (!isAdminEmail(input.adminEmail)) {
     throw { status: 403, message: "Only admins can soft delete users" };
   }
-  
+
   const user = await getUserById(input.targetUserId);
   if (!user) throw { status: 404, message: "User not found" };
-  
+
   // Prevent admins from soft deleting themselves
   if (user.email.toLowerCase() === input.adminEmail.toLowerCase()) {
     throw { status: 400, message: "Admins cannot soft delete themselves" };
   }
-  
+
   // Prevent soft deleting other admins
   if (isAdminEmail(user.email)) {
     throw { status: 403, message: "Cannot soft delete admin users" };
   }
-  
+
   if (!user.isActive) {
     return { user: sanitizeUser(user), message: "User is already deactivated" };
   }
-  
+
   const updated = await updateUser(user.id, { isActive: false });
-  return { user: sanitizeUser(updated), message: "User deactivated successfully" };
+  return {
+    user: sanitizeUser(updated),
+    message: "User deactivated successfully",
+  };
 }
 
 function sanitizeUser<T extends { password?: string | null }>(user: T) {

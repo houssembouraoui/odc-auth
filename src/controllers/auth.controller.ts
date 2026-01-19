@@ -233,6 +233,9 @@ export const softDeleteUser = async (
 ) => {
   try {
     const adminEmail = (req as any).user?.email as string;
+    if (!adminEmail) {
+      throw { status: 401, message: "Email not found in token" };
+    }
     const targetUserId = req.body?.userId;
     const result = await softDeleteUserService({
       adminEmail,
