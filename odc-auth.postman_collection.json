@@ -190,6 +190,26 @@
       }
     },
     {
+      "name": "Change Password (Same as Old - 409 Error)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"currentPassword\": \"P@ssw0rd!\",\n  \"newPassword\": \"P@ssw0rd!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/password/change",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "password", "change"]
+        },
+        "description": "This request should return a 409 (Conflict) status code because the new password is the same as the old password."
+      }
+    },
+    {
       "name": "Verify Email",
       "request": {
         "method": "POST",

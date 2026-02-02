@@ -180,6 +180,9 @@ export async function changePasswordService(input: {
   const user = await getUserById(input.userId);
   if (!user) throw { status: 404, message: "User not found" };
   if (!user.isActive) throw { status: 403, message: "User is deactivated" };
+  if (input.currentPassword === input.newPassword) {
+    throw { status: 409, message: "New password cannot be the same as old password" };
+  }
   const ok = await comparePasswords(input.currentPassword, user.password);
   if (!ok) throw { status: 401, message: "Invalid current password" };
   const passwordHashed = await hashPassword(input.newPassword);
