@@ -12,9 +12,9 @@ import {
   verifyEmailService,
   resendVerificationService,
   deactivateUserService,
-  activateUserService,
   deleteAccountService,
   softDeleteUserService,
+  unblockUserService,
 } from "../services/auth.service";
 
 export const register = async (
@@ -205,7 +205,15 @@ export const activateUser = async (
   next: NextFunction
 ) => {
   try {
-    const result = await activateUserService({ userId: req.body?.userId });
+    const adminEmail = (req as any).user?.email as string;
+    if (!adminEmail) {
+      throw { status: 401, message: "Email not found in token" };
+    }
+    const targetUserId = req.body?.userId;
+    const result = await unblockUserService({
+      adminEmail,
+      targetUserId,
+    });
     res.json(result);
   } catch (err) {
     next(err);

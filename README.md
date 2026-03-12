@@ -104,7 +104,7 @@ model User {
 | Account Management  | DELETE | /auth/account             | Delete own account (hard delete)    |
 |                     | POST   | /auth/users/soft-delete   | Soft delete user (admin only, sets isActive=false) |
 |                     | POST   | /auth/users/deactivate    | Deactivate user (sets isActive=false) |
-|                     | POST   | /auth/users/activate      | Activate user (sets isActive=true)   |
+|                     | POST   | /auth/users/activate      | Unblock/activate user (admin only, sets isActive=true) |
 | Sync (API ↔ Auth)   | GET    | /sync/preview             | Preview users to be removed          |
 |                     | POST   | /sync/users               | Remove orphaned users from auth DB   |
 
@@ -120,6 +120,7 @@ model User {
 - **Account Deletion**:
   - Users can delete their own accounts completely (hard delete) via `DELETE /api/auth/account`.
   - Admins can soft delete users (set isActive=false) via `POST /api/auth/users/soft-delete`. Admins cannot soft delete themselves or other admins.
+  - Admins can unblock users (set isActive=true) via `POST /api/auth/users/activate`. Only admins can trigger user activation.
 - Global error handling via `error.middleware.ts`, returning structured JSON errors.
 - Run with Docker Compose: `docker-compose up --build` spins up the Node server and PostgreSQL database.
 - Prisma migrations auto-run on container startup.

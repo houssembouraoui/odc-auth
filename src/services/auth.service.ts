@@ -309,6 +309,34 @@ export async function softDeleteUserService(input: {
   };
 }
 
+/**
+ * Unblock user (set isActive=true) - only admins can unblock users
+ */
+export async function unblockUserService(input: {
+  adminEmail: string;
+  targetUserId: string;
+}) {
+  if (!isAdminEmail(input.adminEmail)) {
+    throw { status: 403, message: "Only admins can unblock users" };
+  }
+
+  const user = await getUserById(input.targetUserId);
+  if (!user) throw { status: 404, message: "User not found" };
+
+  if (user.isActive) {
+    return {
+      user: sanitizeUser(user),
+      message: "User is already active",
+    };
+  }
+
+  const updated = await updateUser(user.id, { isActive: true });
+  return {
+    user: sanitizeUser(updated),
+    message: "User unblocked successfully",
+  };
+}
+
 function sanitizeUser<T extends { password?: string | null }>(user: T) {
   const { password, ...rest } = user as any;
   return rest;
