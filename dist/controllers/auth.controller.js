@@ -153,7 +153,15 @@ const deactivateUser = async (req, res, next) => {
 exports.deactivateUser = deactivateUser;
 const activateUser = async (req, res, next) => {
     try {
-        const result = await (0, auth_service_1.activateUserService)({ userId: req.body?.userId });
+        const adminEmail = req.user?.email;
+        if (!adminEmail) {
+            throw { status: 401, message: "Email not found in token" };
+        }
+        const targetUserId = req.body?.userId;
+        const result = await (0, auth_service_1.unblockUserService)({
+            adminEmail,
+            targetUserId,
+        });
         res.json(result);
     }
     catch (err) {
@@ -175,6 +183,9 @@ exports.deleteAccount = deleteAccount;
 const softDeleteUser = async (req, res, next) => {
     try {
         const adminEmail = req.user?.email;
+        if (!adminEmail) {
+            throw { status: 401, message: "Email not found in token" };
+        }
         const targetUserId = req.body?.userId;
         const result = await (0, auth_service_1.softDeleteUserService)({
             adminEmail,

@@ -75,6 +75,7 @@ const defaultTemplates = {
     welcomeTempPassword: "Hello {{nameOrEmail}},\n\nWelcome aboard! Your temporary password is: {{tempPassword}}\n\nPlease sign in and change it immediately from your account settings.{{actionUrl?}}\n\nThanks,\nODC Auth Team",
     passwordReset: "Hi {{nameOrEmail}},\n\nUse this token to reset your password: {{resetToken}}\nReset here: {{actionUrl}}\nIf you didn't request this, please ignore this email.",
     verifyEmail: "Hello {{nameOrEmail}},\n\nVerify your email using this token: {{verificationToken}}\nVerify here: {{actionUrl}}",
+    passwordChanged: "Hello {{nameOrEmail}},\n\nThis is a confirmation that the password for your account was changed.\n\nIf you did not perform this change, please use the account recovery / forgot password process.\n\nThanks,\nODC Auth Team",
 };
 function renderTemplate(template, variables) {
     // support optional block {{actionUrl?}} -> replaced with "\nLink: <url>" only when provided

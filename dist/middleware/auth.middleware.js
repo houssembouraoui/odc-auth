@@ -60,10 +60,16 @@ async function authMiddleware(req, res, next) {
     catch (err) {
         const status = 401;
         const statusText = http_1.STATUS_CODES[status] || "Unauthorized";
+        // Log the actual error for debugging (you can remove this in production)
+        const errorMessage = err?.name === "TokenExpiredError"
+            ? "Token has expired"
+            : err?.name === "JsonWebTokenError"
+                ? "Invalid token signature"
+                : err?.message || "Invalid or expired token";
         return res.status(status).json({
             statusCode: status,
             error: statusText,
-            message: "Invalid or expired token",
+            message: errorMessage,
             path: req.originalUrl,
             method: req.method,
             timestamp: new Date().toISOString(),

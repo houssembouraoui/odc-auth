@@ -96,6 +96,9 @@ const defaultTemplates: TemplateMap = {
 
   verifyEmail:
     "Hello {{nameOrEmail}},\n\nVerify your email using this token: {{verificationToken}}\nVerify here: {{actionUrl}}",
+
+  passwordChanged:
+    "Hello {{nameOrEmail}},\n\nThis is a confirmation that the password for your account was changed.\n\nIf you did not perform this change, please use the account recovery / forgot password process.\n\nThanks,\nODC Auth Team",
 };
 
 export function renderTemplate(

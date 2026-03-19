@@ -15,6 +15,7 @@ exports.deactivateUserService = deactivateUserService;
 exports.activateUserService = activateUserService;
 exports.deleteAccountService = deleteAccountService;
 exports.softDeleteUserService = softDeleteUserService;
+exports.unblockUserService = unblockUserService;
 const user_repository_1 = require("../repositories/user.repository");
 const hash_util_1 = require("../utils/hash.util");
 const token_util_1 = require("../utils/token.util");
@@ -146,6 +147,7 @@ async function resetPasswordService(input) {
             throw new Error("Invalid token");
         const passwordHashed = await (0, hash_util_1.hashPassword)(input.newPassword);
         await (0, user_repository_1.updateUser)(user.id, { password: passwordHashed, resetToken: null });
+        await sendPasswordChangedNotice(user);
         return { success: true };
     }
     catch {
@@ -158,11 +160,15 @@ async function changePasswordService(input) {
         throw { status: 404, message: "User not found" };
     if (!user.isActive)
         throw { status: 403, message: "User is deactivated" };
+    if (input.currentPassword === input.newPassword) {
+        throw { status: 409, message: "New password cannot be the same as old password" };
+    }
     const ok = await (0, hash_util_1.comparePasswords)(input.currentPassword, user.password);
     if (!ok)
         throw { status: 401, message: "Invalid current password" };
     const passwordHashed = await (0, hash_util_1.hashPassword)(input.newPassword);
     await (0, user_repository_1.updateUser)(user.id, { password: passwordHashed });
+    await sendPasswordChangedNotice(user);
     return { success: true };
 }
 async function verifyEmailService(input) {
@@ -257,7 +263,32 @@ async function softDeleteUserService(input) {
         return { user: sanitizeUser(user), message: "User is already deactivated" };
     }
     const updated = await (0, user_repository_1.updateUser)(user.id, { isActive: false });
-    return { user: sanitizeUser(updated), message: "User deactivated successfully" };
+    return {
+        user: sanitizeUser(updated),
+        message: "User deactivated successfully",
+    };
+}
+/**
+ * Unblock user (set isActive=true) - only admins can unblock users
+ */
+async function unblockUserService(input) {
+    if (!(0, admin_util_1.isAdminEmail)(input.adminEmail)) {
+        throw { status: 403, message: "Only admins can unblock users" };
+    }
+    const user = await (0, user_repository_1.getUserById)(input.targetUserId);
+    if (!user)
+        throw { status: 404, message: "User not found" };
+    if (user.isActive) {
+        return {
+            user: sanitizeUser(user),
+            message: "User is already active",
+        };
+    }
+    const updated = await (0, user_repository_1.updateUser)(user.id, { isActive: true });
+    return {
+        user: sanitizeUser(updated),
+        message: "User unblocked successfully",
+    };
 }
 function sanitizeUser(user) {
     const { password, ...rest } = user;
@@ -274,4 +305,20 @@ function buildActionUrl(params) {
         return `${base}${sep}${encodeURIComponent(queryName)}=${encodeURIComponent(token)}`;
     }
     return undefined;
+}
+async function sendPasswordChangedNotice(user) {
+    try {
+        await (0, email_util_1.sendTemplatedMail)({
+            to: user.email,
+            subject: "Password changed",
+            templateKey: "passwordChanged",
+            variables: {
+                nameOrEmail: user.name || user.email,
+            },
+        });
+    }
+    catch (err) {
+        // Best-effort: do not block password changes if email provider fails.
+        console.error("Password change notification email failed", err);
+    }
 }

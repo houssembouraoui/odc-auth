@@ -166,6 +166,7 @@ export async function resetPasswordService(input: {
       throw new Error("Invalid token");
     const passwordHashed = await hashPassword(input.newPassword);
     await updateUser(user.id, { password: passwordHashed, resetToken: null });
+    await sendPasswordChangedNotice(user);
     return { success: true };
   } catch {
     throw { status: 400, message: "Invalid or expired reset token" };
@@ -187,6 +188,7 @@ export async function changePasswordService(input: {
   if (!ok) throw { status: 401, message: "Invalid current password" };
   const passwordHashed = await hashPassword(input.newPassword);
   await updateUser(user.id, { password: passwordHashed });
+  await sendPasswordChangedNotice(user);
   return { success: true };
 }
 
@@ -364,4 +366,20 @@ function buildActionUrl(params: {
     )}`;
   }
   return undefined;
+}
+
+async function sendPasswordChangedNotice(user: { email: string; name?: string | null }) {
+  try {
+    await sendTemplatedMail({
+      to: user.email,
+      subject: "Password changed",
+      templateKey: "passwordChanged",
+      variables: {
+        nameOrEmail: user.name || user.email,
+      },
+    });
+  } catch (err) {
+    // Best-effort: do not block password changes if email provider fails.
+    console.error("Password change notification email failed", err);
+  }
 }

@@ -11,6 +11,7 @@ const templateKeyEnum = zod_1.z.enum([
     "welcomeTempPassword",
     "passwordReset",
     "verifyEmail",
+    "passwordChanged",
 ]);
 exports.registerSchema = zod_1.z.object({
     email: emailField,

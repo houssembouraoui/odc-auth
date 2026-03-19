@@ -10,6 +10,7 @@ const templateKeyEnum = z.enum([
   "welcomeTempPassword",
   "passwordReset",
   "verifyEmail",
+  "passwordChanged",
 ]);
 
 export const registerSchema = z.object({
