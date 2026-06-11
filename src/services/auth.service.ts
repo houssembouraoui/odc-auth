@@ -182,7 +182,10 @@ export async function changePasswordService(input: {
   if (!user) throw { status: 404, message: "User not found" };
   if (!user.isActive) throw { status: 403, message: "User is deactivated" };
   if (input.currentPassword === input.newPassword) {
-    throw { status: 409, message: "New password cannot be the same as old password" };
+    throw {
+      status: 409,
+      message: "New password cannot be the same as old password",
+    };
   }
   const ok = await comparePasswords(input.currentPassword, user.password);
   if (!ok) throw { status: 401, message: "Invalid current password" };
@@ -304,9 +307,8 @@ export async function softDeleteUserService(input: {
     return { user: sanitizeUser(user), message: "User is already deactivated" };
   }
 
-  const updated = await updateUser(user.id, { isActive: false });
+  await deleteUserById(user.id);
   return {
-    user: sanitizeUser(updated),
     message: "User deactivated successfully",
   };
 }
@@ -355,20 +357,23 @@ function buildActionUrl(params: {
   if (templateText) {
     return templateText.replace(
       /\{\{\s*token\s*\}\}/g,
-      encodeURIComponent(token)
+      encodeURIComponent(token),
     );
   }
   if (base) {
     const hasQuery = base.includes("?");
     const sep = hasQuery ? "&" : "?";
     return `${base}${sep}${encodeURIComponent(queryName)}=${encodeURIComponent(
-      token
+      token,
     )}`;
   }
   return undefined;
 }
 
-async function sendPasswordChangedNotice(user: { email: string; name?: string | null }) {
+async function sendPasswordChangedNotice(user: {
+  email: string;
+  name?: string | null;
+}) {
   try {
     await sendTemplatedMail({
       to: user.email,
